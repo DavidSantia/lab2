@@ -1,0 +1,111 @@
+package com.newrelic.servlet;
+
+import com.newrelic.servlet.RedisConnect;
+import com.newrelic.telemetry.Attributes;
+import com.newrelic.telemetry.SimpleMetricBatchSender;
+import com.newrelic.telemetry.metrics.Gauge;
+import com.newrelic.telemetry.metrics.MetricBatchSender;
+import com.newrelic.telemetry.metrics.MetricBuffer;
+import com.newrelic.telemetry.exceptions.ResponseException;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+/**
+ * @author davidmorris
+ */
+@WebServlet("/info")
+public class InfoServlet extends HttpServlet {
+
+	private static final Logger logger = LogManager.getLogger(InfoServlet.class);
+
+	protected void doGet(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		ServletContext ctx = request.getServletContext();
+
+		// get Redis
+		RedisConnect redis = (RedisConnect) ctx.getAttribute("Redis");
+		String info = redis.conn().info();
+
+		// return HTML response
+		PrintWriter writer = response.getWriter();
+		String htmlRespone = "<html>\n";
+		htmlRespone += "<p>" + info.replaceAll("\n","<br />") + "</p>\n";
+		htmlRespone += "</html>\n";
+		writer.println(htmlRespone);
+
+		// spit into key value pairs
+		String[] KeyValues = info.replaceAll("\r","").split("\n");
+		Map<String, String> stats = new HashMap<String, String>();
+		for (int i = 0; i < KeyValues.length; i++) {
+			String[] keyVal = KeyValues[i].split(":");
+			if (keyVal.length == 1 || keyVal[0].length() == 0 || keyVal[0].charAt(0) == '#') {
+				continue;
+			}
+			logger.debug(keyVal[0] + " = " + keyVal[1]);
+			stats.put(keyVal[0], keyVal[1]);
+		}
+		logger.info("Found " + stats.size() + " keys");
+
+		String insightsInsertKey = System.getenv("NEW_RELIC_INSIGHTS_INSERT_KEY");
+		if (insightsInsertKey.length() > 0) {
+			MetricBatchSender sender = SimpleMetricBatchSender.builder(insightsInsertKey).build();
+
+			// common attributes
+			Attributes commonAttributes = new Attributes();
+			commonAttributes.put("os", stats.get("os"));
+			commonAttributes.put("mode", stats.get("redis_mode"));
+			MetricBuffer metricBuffer = new MetricBuffer(commonAttributes);
+
+			// memoryUsed attributes
+			Attributes memAttributes = new Attributes();
+			memAttributes.put("fragmentationRatio", Double.parseDouble(stats.get("mem_fragmentation_ratio")));
+			memAttributes.put("fragmentationBytes", Integer.parseInt(stats.get("mem_fragmentation_bytes")));
+
+			// memoryUsed metric
+			Gauge memoryUsed = new Gauge(
+					"memoryUsed",
+					Integer.parseInt(stats.get("used_memory_rss")),
+					System.currentTimeMillis(),
+					memAttributes
+					);
+			metricBuffer.addMetric(memoryUsed);
+
+			// connections attributes
+			Attributes connAttributes = new Attributes();
+			connAttributes.put("commandsProcessed", Integer.parseInt(stats.get("total_commands_processed")));
+
+			// connections metric
+			Gauge connections = new Gauge(
+					"connections",
+					Integer.parseInt(stats.get("total_connections_received")),
+					System.currentTimeMillis(),
+					connAttributes
+					);
+			metricBuffer.addMetric(connections);
+
+			// send metrics
+			logger.info("Sending dimensional metrics");
+			try {
+				sender.sendBatch(metricBuffer.createBatch());
+			} catch (ResponseException e) {
+				logger.error("Sending telemetry " + e);
+			}
+		} else {
+			logger.warn("env var NEW_RELIC_INSIGHTS_INSERT_KEY not configured");
+		}
+	}
+}
