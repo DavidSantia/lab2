@@ -1,7 +1,7 @@
 # lab2
 Tomcat Java lab for New Relic instrumentation
 
-This Linux-based lab is containerized with Docker, and can run on Mac, Windows or Linux
+Containerized with Docker, it can run on Mac, Windows or Linux
 
 ## Background
 
