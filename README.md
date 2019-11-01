@@ -13,7 +13,7 @@ Finally, it provides some error scenarios to exercise the monitoring system.
 
 ## Lab setup
 
-* The New Relic Java APM agent is installed on the Docker container to monitor the Tomcat server running our Java app
+* The New Relic Java APM agent is installed on the container to monitor the Tomcat server running our Java app
 * The lab illustrates running micro-services with Docker, adding a Redis container to the system
 * The New Relic Telemetry SDK is added to show how to capture Redis health stats as Dimensional Metrics
 * A Fluentd container forwards both the Redis and Tomcat logs to New Relic Logs
