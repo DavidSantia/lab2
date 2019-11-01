@@ -1,0 +1,13 @@
+FROM tomcat:latest
+
+# Install Maven
+RUN apt-get update && apt-get install -y maven
+ADD pom.xml /lab2/pom.xml
+ADD src /lab2/src
+RUN cd /lab2 && mvn package
+
+# Add static content
+ADD images /usr/share/images
+
+CMD ["/usr/local/tomcat/bin/catalina.sh", "run"]
+
