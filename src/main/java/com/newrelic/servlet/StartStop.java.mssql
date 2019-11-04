@@ -1,0 +1,31 @@
+package com.newrelic.servlet;
+
+import com.newrelic.servlet.SqlConnect;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+/**
+ * @author davidmorris
+ */
+public class StartStop implements ServletContextListener {
+    
+    public void contextInitialized(ServletContextEvent servletContextEvent) {
+        ServletContext ctx = servletContextEvent.getServletContext();
+        
+        // Open connection to SQL server
+        SqlConnect mssql = new SqlConnect("mssql");
+        ctx.setAttribute("MSSQL", mssql);
+    }
+
+    public void contextDestroyed(ServletContextEvent servletContextEvent) {
+        System.out.println("Lab1 Server exiting, closing SQL server");
+        ServletContext ctx = servletContextEvent.getServletContext();
+        
+        // Close connection to SQL server
+        SqlConnect mssql = (SqlConnect) ctx.getAttribute("MSSQL");
+        mssql.close();
+    }
+}
+
