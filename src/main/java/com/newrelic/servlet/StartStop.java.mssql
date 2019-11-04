@@ -10,22 +10,21 @@ import javax.servlet.ServletContextListener;
  * @author davidmorris
  */
 public class StartStop implements ServletContextListener {
-    
-    public void contextInitialized(ServletContextEvent servletContextEvent) {
-        ServletContext ctx = servletContextEvent.getServletContext();
-        
-        // Open connection to SQL server
-        SqlConnect mssql = new SqlConnect("mssql");
-        ctx.setAttribute("MSSQL", mssql);
-    }
 
-    public void contextDestroyed(ServletContextEvent servletContextEvent) {
-        System.out.println("Lab1 Server exiting, closing SQL server");
-        ServletContext ctx = servletContextEvent.getServletContext();
-        
-        // Close connection to SQL server
-        SqlConnect mssql = (SqlConnect) ctx.getAttribute("MSSQL");
-        mssql.close();
-    }
+	public void contextInitialized(ServletContextEvent servletContextEvent) {
+		ServletContext ctx = servletContextEvent.getServletContext();
+
+		// Open connection to SQL server
+		SqlConnect mssql = new SqlConnect("mssql");
+		ctx.setAttribute("MSSQL", mssql);
+	}
+
+	public void contextDestroyed(ServletContextEvent servletContextEvent) {
+		System.out.println("Lab1 Server exiting, closing SQL server");
+		ServletContext ctx = servletContextEvent.getServletContext();
+
+		// Close connection to SQL server
+		SqlConnect mssql = (SqlConnect) ctx.getAttribute("MSSQL");
+		mssql.close();
+	}
 }
-
