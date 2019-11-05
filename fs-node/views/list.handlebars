@@ -1,0 +1,46 @@
+{{> navbar path=path}}
+
+<div style="padding-top: 56px; padding-bottom: 56px;">
+<main class="container my-4">
+    {{#each errors as |error|}}
+        <div class="alert alert-danger" role="alert">
+            {{error}}
+        </div>
+    {{/each}}
+    {{#each successes as |success|}}
+        <div class="alert alert-success" role="alert">
+            {{success}}
+        </div>
+    {{/each}}
+    <ul class="list-group">
+    {{#each files}}
+        <li class="list-group-item">
+            <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input multi-select" data-select="{{name}}" data-select-size="{{size}}" id="check{{@index}}">
+                <label class="custom-control-label d-flex align-items-start justify-content-between" for="check{{@index}}">
+                    {{#if isdirectory}}
+                        <a href="./{{name}}/" class="name">{{name}}/</a>
+                    {{else}}
+                        <a href="./{{name}}" class="name mr-auto">{{name}}</a>
+                        <span class="badge badge-pill badge-secondary">{{size}}</span>
+                    {{/if}}
+                </label>
+            </div>
+        </li>
+    {{else}}
+        <li class="list-group-item">
+            No files
+        </li>
+    {{/each}}
+    </ul>
+</main>
+</div>
+
+{{> toolbar shellable=shellable cmdable=cmdable}}
+
+{{> dialogue-upload}}
+{{> dialogue-mkdir}}
+{{> dialogue-cmd}}
+
+{{> dialogue-download}}
+{{> dialogue-delete}}
