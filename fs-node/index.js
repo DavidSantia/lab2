@@ -21,6 +21,7 @@ const base32 = require("thirty-two");
 const fs = require("fs");
 const rimraf = require("rimraf");
 const path = require("path");
+const request = require('request');
 
 const filesize = require("filesize");
 const octicons = require("octicons");
@@ -187,6 +188,35 @@ app.put("/*", (req, res) => {
     else {
         req.flash("error", "File exists, cannot overwrite. ");
         res.redirect("back");
+    }
+});
+
+app.post("/*@process", (req, res) => {
+    res.filename = req.params[0];
+
+    // check if file exists
+    try {
+        const stats = fs.statSync(res.filename);
+        var data = {data: fs.readFileSync(res.filename, 'utf8')};
+        console.log("Posting file '" + res.filename + "' to Tomcat lab2 app");
+        request.post({url:'http://tomcat:8080/lab2/process', form: data}, (err, httpResponse, body) => {
+            if (err) {
+                res.status(500).send({
+                    error: err.message
+                });
+            }
+            let words = "0";
+            const found = body.match(/<h2>Processed ([0-9]+) words<\/h2>/);
+            if (found.length > 1)
+                words = found[1];
+            console.log("Server processed " + words + " words");
+            res.json({status: "Success", words: words});
+        });
+    } catch(err) {
+        console.log("File '" + res.filename + "' does not exist.");
+        res.status(404).send({
+            error: err.message
+        });
     }
 });
 
@@ -455,9 +485,9 @@ if (shellable || cmdable) {
     });
 
     const ws = new WebSocket.Server({ server: http });
-	ws.on("connection", (socket, request) => {
-		console.log(request.url);
-		const { path } = querystring.parse(request.url.split("?")[1]);
+	ws.on("connection", (socket, req) => {
+		console.log(req.url);
+		const { path } = querystring.parse(req.url.split("?")[1]);
         let cwd = relative(path);
         let term = pty.spawn(exec, args, {
             name: "xterm-256color",

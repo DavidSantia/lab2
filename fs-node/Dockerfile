@@ -3,7 +3,7 @@ FROM node:11-stretch
 ENV PLUGIN_VERSION=6.0.0
 ENV NEW_RELIC_LICENSE_KEY=""
 ENV NEW_RELIC_LOG_LEVEL="info"
-ENV FS_AGENT_NAME=""
+ENV FS_APP_NAME=""
 
 RUN apt-get update \
     && apt-get install -y build-essential zip unzip \

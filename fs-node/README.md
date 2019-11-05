@@ -1,78 +1,54 @@
 # fs-node
 
-A basic node.js file server.  This directory is a copy of github.com/ambrosechua/file-manager.
+A basic node.js file server, a copy of [github.com/ambrosechua/file-manager](https://github.com/ambrosechua/file-manager), with modifications to interact with lab2.
 
 ## Features
 
-- [x] [Simple authentication](https://github.com/ambrosechua/file-manager#key)
-- [x] Directory browsing
-  - [x] Filesize
-  - [ ] Permissions
-  - [ ] Owner
-- [x] Folder creation
-- [x] File uploads
-  - [ ] Bulk file uploads
-  - [ ] Large file uploads (sharded)
-- [ ] File/folder renaming
-- [x] Bulk file/folder selection
-  - [x] Delete
-    - [ ] Recursive directory delete
-  - [ ] Move
-  - [ ] Copy
-  - [x] Download archive
-  - [ ] Change permissions
-- [x] Remote commands
-  
-## Screenshots
+This code has been modified to add the following:
 
-These screenshots are not up-to-date. 
+ - New Relic APM agent
+   - See Dockerfile for agent installation
+   - See `start-agent.sh` for configuring `newrelic.js` from ENV vars
+   - See `views/layouts/main.handlebars` for inserting browser timing header
+ - Extra commands `@list` and `@process`
 
-![](https://ambrose.makerforce.io/file-manager/login1.png)
-
-![](https://ambrose.makerforce.io/file-manager/upl2.png)
-
-![](https://ambrose.makerforce.io/file-manager/ls1.png)
-
-![](https://ambrose.makerforce.io/file-manager/rm1.png)
-
-![](https://ambrose.makerforce.io/file-manager/dl1.png)
+## Build image
+```sh
+docker build -t fs-node .
+```
 
 ## Usage
 
-```zsh
-docker run --rm -it -v $PWD:/data -p 8080:8080 registry.labs.0x.no/file-manager
+```sh
+docker run --rm --name=fs-node -p 8081:8080 --link tomcat fs-node
 ```
 
-OR
+## Special API commands
+Two JSON endpoints have been a to interact with the Java app, creating both distributed traces, as
+well as a test facility which can be leveraged in a Synthetic API monitor.
 
-```zsh
-git clone https://github.com/ambrosechua/file-manager.git ~/path/to/file-manager
-node ~/path/to/file-manager/index.js
-# or
-npm i -g https://github.com/ambrosechua/file-manager.git
-file-manager
+The `@list` command returns a list of available files
+
+ - GET http://localhost:8081/@list
+
+```json
+[
+    "AimWasSong-Frost.txt",
+    "CagedBird-Angelou.txt",
+    "Daffodils-Wordsworth.txt",
+    "GreatWagon-Rumi.txt",
+    "Sonnet18-Shakespeare.txt",
+    "Tiger-Blake.txt"
+]
 ```
 
-## Options
+The `@process` command is used to post a file to the Lab2 Tomcat server
 
-Options are currently only suppliable via ENV variables. 
+ - POST http://localhost:8081/AimWasSong-Frost.txt@process
 
-### SHELL=
-
-Set to `login` to enable accessing a login shell, or your shell binary (example: `bash`). Be careful when enabling this feature. 
-
-### CMD=
-
-Set to shell binary to enable an alternative command-based execution. Be careful when enabling this feature. 
-
-### PORT=
-
-Listen on $PORT. Default: 8080
-
-### KEY=
-
-Setting this variable enables authentication using 
-TOTP (RFC6238). $KEY is a base32 encoded shared 
-secret. This key is only a weak means of protection 
-as it is succeptable to brute-force. You can generate 
-one from [here](http://www.xanxys.net/totp/) or manually. 
+```json
+{
+    "status": "Success",
+    "words": "113"
+}
+```
