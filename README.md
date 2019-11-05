@@ -20,6 +20,7 @@ Finally, it provides some error scenarios to exercise the monitoring system.
 * The New Relic Telemetry SDK is added to show how to capture Redis health stats as Dimensional Metrics
 * A Fluentd container forwards both the Redis and Tomcat logs to New Relic Logs
 * The Java app uses log4j, which is configured for New Relic logs-in-context
+* A Node.js file server with APM agent, providing a JSON API test framework for Synthetics functional testing
 
 ## Error scenarios 
 
