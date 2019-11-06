@@ -1,5 +1,6 @@
 package com.newrelic.servlet;
 
+import com.newrelic.servlet.RedisConnect;
 import com.newrelic.servlet.SqlConnect;
 
 import javax.servlet.ServletContext;
@@ -14,6 +15,10 @@ public class StartStop implements ServletContextListener {
 	public void contextInitialized(ServletContextEvent servletContextEvent) {
 		ServletContext ctx = servletContextEvent.getServletContext();
 
+		// Open connection to Redis
+		RedisConnect redis = new RedisConnect("redis");
+		ctx.setAttribute("Redis", redis);
+
 		// Open connection to SQL server
 		SqlConnect mssql = new SqlConnect("mssql");
 		ctx.setAttribute("MSSQL", mssql);
@@ -22,6 +27,10 @@ public class StartStop implements ServletContextListener {
 	public void contextDestroyed(ServletContextEvent servletContextEvent) {
 		System.out.println("Lab1 Server exiting, closing SQL server");
 		ServletContext ctx = servletContextEvent.getServletContext();
+
+		// Close connection to Redis
+		RedisConnect redis = (RedisConnect) ctx.getAttribute("Redis");
+		redis.close();
 
 		// Close connection to SQL server
 		SqlConnect mssql = (SqlConnect) ctx.getAttribute("MSSQL");

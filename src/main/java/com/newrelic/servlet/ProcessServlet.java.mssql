@@ -1,6 +1,7 @@
 package com.newrelic.servlet;
 
 import com.newrelic.api.agent.NewRelic;
+import com.newrelic.servlet.RedisConnect;
 import com.newrelic.servlet.SqlConnect;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -43,6 +44,14 @@ public class ProcessServlet extends HttpServlet {
 		String[] words = dataNoPunct.split(" +");
 		logger.info("Word Stats: total " + words.length);
 
+		// store word in Redis
+		RedisConnect redis = (RedisConnect) ctx.getAttribute("Redis");
+		for (int i = 0; i < words.length; i++) {
+			// increments the number stored at key by one
+			// if the key does not exist, it is set to 0 before performing the operation
+			redis.conn().incr(words[i].toLowerCase());
+		}
+
 		// store words in MSSQL
 		SqlConnect mssql = (SqlConnect) ctx.getAttribute("MSSQL");
 		try {
@@ -58,13 +67,13 @@ public class ProcessServlet extends HttpServlet {
 			logger.error(e.getClass().getName() + ": " + e.getMessage());
 		}
 
-		Integer the = 0;
+		String the = redis.conn().get("the");
 		try {
 			Statement stmt = mssql.conn().createStatement();
 			String sql = "SELECT ISNULL(MAX(Count),0) AS count FROM stats WHERE Name = 'the'";
 			ResultSet rs = stmt.executeQuery(sql);
 			if (rs.next())
-				the = rs.getInt("count");
+				the = rs.getString("count");
 		} catch (SQLException e) {
 			logger.error(e.getClass().getName() + ": " + e.getMessage());
 		}
