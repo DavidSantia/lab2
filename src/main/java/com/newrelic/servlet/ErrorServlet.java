@@ -3,7 +3,6 @@ package com.newrelic.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -22,31 +21,46 @@ public class ErrorServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger(ErrorServlet.class);
 
-	// Game day scenario - Java heap out of memory
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		int iteratorValue = 20;
-		for (int outerIterator = 1; outerIterator < 20; outerIterator++) {
-			logger.info("FillMemory iteration #" + outerIterator + ", " + Runtime.getRuntime().freeMemory()
-					+ " bytes free");
-			int loop1 = 2;
-			int[] memoryFillIntVar = new int[iteratorValue];
-			do {
-				memoryFillIntVar[loop1] = 0;
-				loop1--;
-			} while (loop1 > 0);
-			iteratorValue = iteratorValue * 5;
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				logger.warn("Thread is interrupted - " + e);
+
+		// Game day scenario - Java heap out of memory
+		Runnable runnable = new Runnable() {
+			public void run() {
+				long memoryConsumed = 0;
+				int dummyArraySize = 256;
+				try {
+					long[] memoryAllocated = null;
+					for (int loop = 0; loop < 100; loop++) {
+						memoryAllocated = new long[dummyArraySize];
+						memoryAllocated[0] = 0;
+						memoryConsumed += dummyArraySize * Long.SIZE;
+						logger.info("Memory consumed: " + memoryConsumed / 1024 + "K");
+						dummyArraySize *= 32;
+						try {
+							Thread.sleep(5000);
+						} catch (InterruptedException ie) {
+							logger.error("InterruptedException: " + ie.getMessage());
+						}
+					}
+				} catch (OutOfMemoryError e) {
+					System.out.println("Catching out of memory error");
+					logger.error("OutOfMemoryError: " + e.getMessage());
+					try {
+						Thread.sleep(60000);
+					} catch (InterruptedException ie) {
+						logger.error("InterruptedException: " + ie.getMessage());
+					}
+				}
 			}
-		}
+		};
 
-		// return HTML response
+		// Start thread and use up memory
+		Thread thread = new Thread(runnable);
+		thread.start();
+		
 		PrintWriter writer = response.getWriter();
-		writer.println("<html>\n<h1>Using up lots of memory</h1>\n</html>");
-
+		String htmlRespone = "<html>\n<h1>Using up free memory on " + thread.getName() + "</h1>\n</html>\n";
+		writer.println(htmlRespone);
 	}
-
 }
