@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>Poem Browser</title>
+
+<script type="text/javascript">
+  // Load file list, make selector
+  function makeSelector() {
+    var request = new XMLHttpRequest();
+    request.open('GET', '@list', true);
+    request.onreadystatechange = function() {
+      if (request.readyState === 4 && request.status === 200) {
+        var list = JSON.parse(request.responseText).filter(function(item) {
+          return /\.txt/.test(item);
+        });
+        console.log("Poems:", list);
+        // TO DO: Make selector
+      }
+    }
+    request.send(null);
+  }
+
+  function showText() {
+    makeSelector();
+  }
+</script>
+
+</head>
+<body onload="showText()">
+
+<div id="container" style="width: 80%; margin: 0 auto; padding: 20px; background: #f0e68c;">
+  <div id="chooser" style="position: relative; float: right; padding: 8px;">
+    <select id="choosePoem" onchange="console.log(this.value)">
+       <option value="Filename.txt">Under Construction...</option>
+    </select>
+  </div>
+  <h2>Poem Browser</h2>
+  <div id="viewer" style="background-color: #FFF9D9; margin: 4px, 4px; padding: 8px; width: 90%; height: 400px; overflow-x: hidden; overflow-y: auto; text-align:justify;">
+    <p style="font-family: Courier; font-size: 30px;">Under Construction...</p>
+  </div>
+</div>
+
+</body>
+</html>
