@@ -10,7 +10,7 @@ echo "Pausing for MSSQL to boot up"
 sleep 15
 
 # MSSQL for Java app
-docker run -d --rm --name redis --log-driver=fluentd redis
+docker run -d --rm --name gameday.redis --log-driver=fluentd redis
 echo "Pausing for Redis to boot up"
 sleep 15
 
