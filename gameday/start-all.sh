@@ -15,8 +15,8 @@ echo "Pausing for Redis to boot up"
 sleep 15
 
 # Tomcat Java app, use newrelic.env for license keys
-docker run -d --rm --name gameday.tomcat --env-file $ROOT/lab2/newrelic.env -p $HOST:8081:8080 --link gameday.redis:redis \
-   --link gameday.mssql:mssql -v $ROOT/lab2/target/lab2.war:/usr/local/tomcat/webapps/lab2.war --log-driver=fluentd tomcat-lab2
+docker run -d --rm --name gameday.tomcat --env-file $ROOT/lab2/newrelic.env -p $HOST:8080:8080 --link gameday.redis:redis \
+  --link gameday.mssql:mssql -v $ROOT/lab2/target/lab2.war:/usr/local/tomcat/webapps/lab2.war --log-driver=fluentd tomcat-lab2
 
 # Node.js app, use newrelic.env for license key
 docker run -d --rm --name gameday.fs-node --env-file $ROOT/lab2/newrelic.env -p $HOST:8081:8080 \
