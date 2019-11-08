@@ -12,7 +12,7 @@ sleep 30
 # Redis for Java app
 docker run -d --rm --name redis --log-driver=fluentd --log-opt tag="nrlogs" redis
 echo "Pausing for Redis to boot up"
-sleep 15
+sleep 30
 
 # Tomcat Java app, use newrelic.env for license keys
 docker run -d --rm --name tomcat --env-file $ROOT/lab2/newrelic.env -p $HOST:8080:8080 --link redis:redis \

@@ -1,5 +1,5 @@
 # Make sure SQL server started
-sleep 15
+sleep 30
 
 # Initialize database and demo user
 echo "$(date -u +'%Y-%m-%d %H:%M:%S.%2N') init-db     Initializing database and demo user"
