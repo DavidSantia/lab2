@@ -71,11 +71,13 @@ app.use("/xterm", express.static(path.join(__dirname, "node_modules/xterm/dist")
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 app.use(session({
-    secret: "meowmeow"    
+    secret: "meowmeow",
+    resave: true,
+    saveUninitialized: true
 }));
 app.use(flash());
 app.use(busboy());
-app.use(bodyparser.urlencoded());
+app.use(bodyparser.urlencoded({extended: false}));
 
 // AUTH
 
