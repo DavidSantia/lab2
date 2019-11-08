@@ -4,5 +4,5 @@ ROOT=$(cd ~/nrworkshop; pwd)
 # NOTE: Must start this after Tomcat
 
 # Node.js app, use newrelic.env for license key
-docker run -d --rm --name gameday.fs-node --env-file $ROOT/lab2/newrelic.env -p $HOST:8081:8080 \
-  --link gameday.tomcat:tomcat --log-driver=fluentd --log-opt tag="docker.{{.Name}}" davidsantia/fs-node
+docker run -d --rm --name gameday-fs-node --env-file $ROOT/lab2/newrelic.env -p $HOST:8081:8080 \
+  --link gameday-tomcat:tomcat --log-driver=fluentd --log-opt tag="docker.{{.Name}}" davidsantia/fs-node
