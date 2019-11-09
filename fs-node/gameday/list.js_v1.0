@@ -16,7 +16,6 @@ function getPoem(file) {
         if (request.readyState === 4 && request.status === 200) {
         var type = request.getResponseHeader('Content-Type');
             if (type.indexOf("text") !== 1) {
-                consol.log("Got file:", file);
                 document.getElementById("viewer").innerHTML = escapeText(request.responseText);
             }
         }
@@ -31,6 +30,5 @@ $(document).ready(() => {
     if (filename.length == 0) {
       filename = './AimWasSong-Frost.txt';
     }
-    //getPoem(filename);
-    getPoem('./AimWasSong-Frost.txt');
+    getPoem(filename);
 });
