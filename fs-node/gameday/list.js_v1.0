@@ -16,7 +16,7 @@ function getPoem(file) {
         if (request.readyState === 4 && request.status === 200) {
         var type = request.getResponseHeader('Content-Type');
             if (type.indexOf("text") !== 1) {
-                console.log("Got file:", file);
+                consol.log("Got file:", file);
                 document.getElementById("viewer").innerHTML = escapeText(request.responseText);
             }
         }
@@ -25,6 +25,12 @@ function getPoem(file) {
 
 $(document).ready(() => {
     $("[title]").tooltip();
+    var filename = null;
 
+    // Why doesn't this work??
+    if (filename.length == 0) {
+      filename = './AimWasSong-Frost.txt';
+    }
+    //getPoem(filename);
     getPoem('./AimWasSong-Frost.txt');
 });

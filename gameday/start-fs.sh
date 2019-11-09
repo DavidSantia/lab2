@@ -5,4 +5,4 @@ ROOT=$(cd ~/nrworkshop; pwd)
 
 # Node.js app, use newrelic.env for license key
 docker run -d --rm --name fs-node --env-file $ROOT/lab2/newrelic.env -p $HOST:8081:8080 \
-  --link tomcat:tomcat --log-driver=fluentd --log-opt tag="nrlogs" davidsantia/fs-node
+  --link tomcat --log-driver=fluentd --log-opt tag="nrlogs" fs-node:v1.0

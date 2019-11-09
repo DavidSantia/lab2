@@ -1,7 +1,6 @@
 ROOT=$(cd ~/nrworkshop; pwd)
 
 docker pull redis
-docker pull davidsantia/fs-node
 
 # Build lab2.war file
 docker run --rm --name mvn-build -v $ROOT/lab2:/lab2 --entrypoint sh davidsantia/tomcat-mvn \
@@ -12,8 +11,13 @@ cd ~/nrworkshop/lab2
 docker rmi tomcat-lab2
 docker build -t tomcat-lab2 .
 
+# Build Node.js app
+cd fs-node
+docker build -f Dockerfile_v0.5 -t fs-node:v0.5 .
+docker build -f Dockerfile_v1.0 -t fs-node:v1.0 .
+
 # Build fluentd image with NR Logs plugin
-cd fluentd
+cd ../fluentd
 docker rmi fluentd-lab2
 docker build -t fluentd-lab2 .
 

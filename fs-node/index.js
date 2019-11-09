@@ -30,6 +30,11 @@ const handlebars = require("handlebars");
 let app = express();
 let http = app.listen(process.env.PORT || 8080);
 
+// convert "title-poet-words.txt" to "title – poet"
+handlebars.registerHelper('replace', function(name) {
+    return name.replace('-',' – ').replace(/[-.].*/,'');
+});
+
 app.set("views", path.join(__dirname, "views"));
 app.engine("handlebars", hbs({
     partialsDir: path.join(__dirname, "views", "partials"),

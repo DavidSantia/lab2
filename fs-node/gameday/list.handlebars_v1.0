@@ -13,20 +13,20 @@
         </div>
     {{/each}}
     <div id="chooser" class="select">
-        <select id="choosePoem" onchange="getPoem(this.value)">
+        <select id="choosePoem" onchange="console.log(this.value)">
         {{#each files}}
             {{#if isdirectory}}
             <!-- skipping directory {{name}} -->
             {{else}}
-            <option value="{{name}}">{{replace name}}</option>
+            <option value="{{name}}">{{name}}</option>
             {{/if}}
         {{else}}
             <option value="">No files</option>
         {{/each}}
         </select>
     </div>
-    <div class="viewer" id="viewer">
-        <p style="font-family: Courier; font-size: 18px;">Loading...</p>
+    <div class="viewer">
+        <p style="font-family: Courier; font-size: 30px;">Under Construction...</p>
     </div>
 </main>
 </div>
