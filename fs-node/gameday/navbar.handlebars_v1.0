@@ -23,5 +23,5 @@
             {{/if}}
         </div>
     </div>
-    <div class="float-right"><span class="badge badge-pill badge-secondary">Version 2.0</span></div>
+    <div class="float-right"><span class="badge badge-pill badge-secondary">Version 1.0</span></div>
 </nav>
