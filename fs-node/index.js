@@ -388,7 +388,18 @@ app.get("/@list", (req, res) => {
         if (err) {
             return reject(err);
         }
-        res.json(filenames);
+        res.json(filenames.map((name) => {
+            let fields = name.replace(".txt", "").split("-");
+            let obj = {filename: name};
+            if (fields.length > 1) {
+                obj.title = fields[0];
+                obj.poet = fields[1];
+            }
+            if (fields.length == 3) {
+                obj.words = fields[2];
+            }
+            return obj;
+        });
     });
 });
 
