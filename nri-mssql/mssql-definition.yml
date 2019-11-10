@@ -1,0 +1,11 @@
+name: com.newrelic.mssql
+description: Reports status and metrics for MSSQL service
+protocol_version: 2
+os: linux
+
+commands:
+  all_data:
+    command:
+      - ./bin/nr-mssql
+    prefix: config/mssql
+    interval: 15

@@ -25,3 +25,7 @@ docker build -t fluentd-lab2 .
 cd ../mssql
 docker rmi mssql
 docker build -t mssql .
+
+# Build MSSQL OHI
+docker run -it --rm -v `pwd`/nri-mssql:/go/src/github.com/newrelic/nri-mssql --entrypoint sh golang \
+  -c "cd /go/src/github.com/newrelic/nri-mssql; make"
