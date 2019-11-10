@@ -28,6 +28,5 @@ docker build -t mssql .
 
 # Build MSSQL OHI
 docker pull golang
-docker run --rm -it -v $ROOT/lab2/nri-mssql:/go/src/github.com/newrelic/nri-mssql --entrypoint sh golang \
+docker run --rm -v $ROOT/lab2/nri-mssql:/go/src/github.com/newrelic/nri-mssql --entrypoint sh golang \
   -c "cd /go/src/github.com/newrelic/nri-mssql; make"
-docker rmi golang
