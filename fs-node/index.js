@@ -399,7 +399,7 @@ app.get("/@list", (req, res) => {
                 obj.words = fields[2];
             }
             return obj;
-        });
+        }));
     });
 });
 
