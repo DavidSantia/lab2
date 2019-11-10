@@ -7,6 +7,7 @@ ROOT=$(cd ~/nrworkshop; pwd)
 NEW_RELIC_LICENSE_KEY=`grep NEW_RELIC_LICENSE_KEY $ROOT/lab2/newrelic.env | sed 's+.*=++'`
 
 sudo hostnamectl set-hostname gameday
+sudo sed -i '/^127.0.0.1/s/$/ gameday/' /etc/hosts
 sudo yum install -y docker
 sudo service docker start
 sudo usermod -a -G docker ec2-user
