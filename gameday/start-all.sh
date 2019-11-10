@@ -5,7 +5,7 @@ ROOT=$(cd ~/nrworkshop; pwd)
 docker run -d --rm --name fluentd -p 24224:24224 fluentd-lab2
 
 # MSSQL for Java app
-docker run -d --rm --name mssql --log-driver=fluentd --log-opt tag="nrlogs" mssql
+docker run -d --rm --name mssql -p 1443:1443 --log-driver=fluentd --log-opt tag="nrlogs" mssql
 echo "Pausing for MSSQL to boot up"
 sleep 30
 
