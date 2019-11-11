@@ -1,0 +1,34 @@
+/* jshint esversion: 6 */
+
+// Convert newlines to <br>, multiple lead spaces to non-breaking
+function escapeText(str) {
+    return str.replace(/^ +/mg, function (match) {
+        return match.replace(/ /g, '&nbsp;');
+    }).replace(/\n/g, '<br>');
+}
+
+// read text from URL location
+function getPoem(file) {
+    var request = new XMLHttpRequest();
+    request.open('GET', file);
+    request.send(null);
+    request.onreadystatechange = function() {
+        if (request.readyState === 4 && request.status === 200) {
+        var type = request.getResponseHeader('Content-Type');
+            if (type.indexOf("text") !== 1) {
+                document.getElementById("viewer").innerHTML = escapeText(request.responseText);
+            }
+        }
+    }
+}
+
+$(document).ready(() => {
+    $("[title]").tooltip();
+    var filename = null;
+
+    // Why doesn't this work??
+    if (filename.length == 0) {
+      filename = './AimWasSong-Frost-113.txt';
+    }
+    getPoem(filename);
+});

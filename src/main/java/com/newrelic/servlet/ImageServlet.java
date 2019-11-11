@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 @WebServlet("/image")
 public class ImageServlet extends HttpServlet {
 	
+	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger(ImageServlet.class);
  
     protected void doGet(HttpServletRequest request,

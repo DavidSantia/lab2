@@ -21,10 +21,11 @@ import org.apache.logging.log4j.Logger;
 @WebServlet("/process")
 public class ProcessServlet extends HttpServlet {
 
+	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger(ProcessServlet.class);
 
-	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		ServletContext ctx = request.getServletContext();
 
 		// get form texarea
@@ -47,7 +48,9 @@ public class ProcessServlet extends HttpServlet {
 		}
 
 		String the = redis.conn().get("the");
-		logger.info("Word Stats: 'the' occurrences " + the);
+		logger.info("firstWord: " + words[0]);
+		logger.info("theWords: " + the);
+		logger.info("totalWords: " + words.length);
 
 		// return HTML response
 		PrintWriter writer = response.getWriter();

@@ -1,0 +1,7 @@
+FROM davidsantia/fs-node
+
+ADD gameday/list.js_v1.0 /src/assets/list.js
+ADD gameday/login.js_v1.0 /src/assets/login.js
+ADD gameday/multi.js_v1.0 /src/assets/multi.js
+ADD gameday/list.handlebars_v1.0 /src/views/list.handlebars
+ADD gameday/navbar.handlebars_v1.0 /src/views/partials/navbar.handlebars
