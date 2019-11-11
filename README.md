@@ -1,7 +1,8 @@
 # lab2
-Tomcat Java lab for New Relic instrumentation
+Tomcat Java, Node.js and MSSQL lab for New Relic instrumentation
 
-Containerized with Docker, it can run on Mac, Windows or Linux
+* Containerized with Docker, it can run on Mac, Windows or Linux
+* Includes scripts to deploy on AWS for Game day team exercises
 
 ## Background
 
