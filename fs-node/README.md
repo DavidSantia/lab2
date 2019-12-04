@@ -10,6 +10,7 @@ This code has been modified to add the following:
    - See Dockerfile for agent installation
    - See `start-agent.sh` for configuring `newrelic.js` from ENV vars
    - See `views/layouts/main.handlebars` for inserting browser timing header
+   - See `index.js` for added Winston logging, with New Relic logs-in-context formatter
  - Extra commands `@list` and `@process`
 
 ## Build image
