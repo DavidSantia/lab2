@@ -6,6 +6,7 @@
     "file-manager": "./index.js"
   },
   "dependencies": {
+    "@newrelic/winston-enricher": "^0.1.0",
     "archiver": "^2.1.1",
     "body-parser": "^1.18.2",
     "bootstrap": "^4.0.0",
@@ -24,6 +25,7 @@
     "rimraf": "^2.6.2",
     "socket.io": "^2.0.4",
     "thirty-two": "^1.0.2",
+    "winston": "^3.1.0",
     "ws": "^6.1.2",
     "xterm": "^3.8.0"
   }
