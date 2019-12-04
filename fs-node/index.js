@@ -28,7 +28,7 @@ const newrelicFormatter = require('@newrelic/winston-enricher')
 const channels = [ new transports.Console({handleExceptions: true}) ];
 const logger = createLogger({
     level: 'info',
-    format: combine(timestamp(), label({label: 'index.js'}), newrelicFormatter()),
+    format: combine(label({label: 'index.js'}), newrelicFormatter()),
     transports: channels
 });
 
