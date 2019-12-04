@@ -12,7 +12,6 @@ const session = require("express-session");
 const busboy = require("connect-busboy");
 const flash = require("connect-flash");
 const querystring = require("querystring");
-
 const archiver = require("archiver");
 
 const notp = require("notp");
@@ -22,6 +21,16 @@ const fs = require("fs");
 const rimraf = require("rimraf");
 const path = require("path");
 const request = require('request');
+const {createLogger, format, transports} = require('winston');
+const {combine, timestamp, label, printf} = format;
+const newrelicFormatter = require('@newrelic/winston-enricher')
+
+const channels = [ new transports.Console({handleExceptions: true}) ];
+const logger = createLogger({
+    level: 'info',
+    format: combine(timestamp(), label({label: 'index.js'}), newrelicFormatter()),
+    transports: channels
+});
 
 const filesize = require("filesize");
 const octicons = require("octicons");
@@ -104,7 +113,7 @@ app.get("/@login", (req, res) => {
 });
 app.post("/@login", (req, res) => {
     let pass = notp.totp.verify(req.body.token.replace(" ", ""), KEY);
-    console.log(pass, req.body.token.replace(" ", ""));
+    logger.info(pass + ", " + req.body.token.replace(" ", ""));
     if (pass) {
         req.session.login = true;
         res.redirect("/");
@@ -205,7 +214,7 @@ app.post("/*@process", (req, res) => {
     try {
         const stats = fs.statSync(res.filename);
         var data = {data: fs.readFileSync(res.filename, 'utf8')};
-        console.log("Posting file '" + res.filename + "' to Tomcat lab2 app");
+        logger.info("Posting file '" + res.filename + "' to Tomcat lab2 app");
         request.post({url:'http://tomcat:8080/lab2/process', form: data}, (err, httpResponse, body) => {
             if (err) {
                 res.status(500).send({
@@ -216,11 +225,11 @@ app.post("/*@process", (req, res) => {
             const found = body.match(/<h2>Processed ([0-9]+) words<\/h2>/);
             if (found.length > 1)
                 words = found[1];
-            console.log("Server processed " + words + " words");
+            logger.info("Server processed " + words + " words");
             res.json({status: "Success", words: words});
         });
     } catch(err) {
-        console.log("File '" + res.filename + "' does not exist.");
+        logger.info("File '" + res.filename + "' does not exist.");
         res.status(404).send({
             error: err.message
         });
@@ -267,7 +276,7 @@ app.post("/*@upload", (req, res) => {
             req.flash("error", "File exists, cannot overwrite. ");
             res.redirect("back");
         }).catch((err) => {
-            console.log("saving");
+            logger.info("saving");
             let save = fs.createWriteStream(relative(res.filename, saveas));
             save.on("close", () => {
                 if (buff.length === 0) {
@@ -450,7 +459,7 @@ app.get("/*@download", (req, res) => {
 
         zip.finalize();
     }).catch((err) => {
-        console.log(err);
+        logger.error(err);
         req.flash("error", err);    
         res.redirect("back");
     });
@@ -504,7 +513,7 @@ if (shellable || cmdable) {
 
     const ws = new WebSocket.Server({ server: http });
 	ws.on("connection", (socket, req) => {
-		console.log(req.url);
+		logger.info(req.url);
 		const { path } = querystring.parse(req.url.split("?")[1]);
         let cwd = relative(path);
         let term = pty.spawn(exec, args, {
@@ -513,13 +522,13 @@ if (shellable || cmdable) {
             rows: 30,
             cwd: cwd,
         });
-        console.log("pid " + term.pid + " shell " + process.env.SHELL + " started in " + cwd);
+        logger.info("pid " + term.pid + " shell " + process.env.SHELL + " started in " + cwd);
 
         term.on("data", (data) => {
             socket.send(data, { binary: true });
         });
         term.on("exit", (code) => {
-            console.log("pid " + term.pid + " ended")
+            logger.info("pid " + term.pid + " ended")
             socket.close();
         });
         socket.on("message", (data) => {
