@@ -1,5 +1,6 @@
 package com.newrelic.servlet;
 
+import com.lambdaworks.redis.RedisConnection;
 import com.newrelic.servlet.RedisConnect;
 
 import java.io.IOException;
@@ -27,23 +28,34 @@ public class InfoServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger(InfoServlet.class);
 
-	protected void doGet(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		ServletContext ctx = request.getServletContext();
 
-		// get Redis
+		PrintWriter writer = response.getWriter();
+
 		RedisConnect redis = (RedisConnect) ctx.getAttribute("Redis");
-		String info = redis.conn().info();
+		RedisConnection<String, String> conn = null;
+		try {
+			conn = redis.conn();
+		} catch (Exception e) {
+			response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+			logger.error(e.getClass().getName() + ": " + e.getMessage());
+			writer.println("<html>\n<h2>" + e.getMessage() + "</h2>\n</html>\n");
+			return;
+		}
+
+		// get Redis stats
+		String info = conn.info();
 
 		// return HTML response
-		PrintWriter writer = response.getWriter();
 		String htmlRespone = "<html>\n";
-		htmlRespone += "<p>" + info.replaceAll("\n","<br />") + "</p>\n";
+		htmlRespone += "<p>" + info.replaceAll("\n", "<br />") + "</p>\n";
 		htmlRespone += "</html>\n";
 		writer.println(htmlRespone);
 
 		// spit into key value pairs
-		String[] KeyValues = info.replaceAll("\r","").split("\n");
+		String[] KeyValues = info.replaceAll("\r", "").split("\n");
 		Map<String, String> stats = new HashMap<String, String>();
 		for (int i = 0; i < KeyValues.length; i++) {
 			String[] keyVal = KeyValues[i].split(":");
