@@ -1,5 +1,6 @@
 package com.newrelic.servlet;
 
+import com.lambdaworks.redis.RedisConnection;
 import com.newrelic.servlet.RedisConnect;
 
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class ProcessServlet extends HttpServlet {
 			throws ServletException, IOException {
 		ServletContext ctx = request.getServletContext();
 
-		// get form texarea
+		// get form textarea
 		request.setCharacterEncoding("UTF-8");
 		String data = request.getParameter("data");
 
@@ -39,24 +40,35 @@ public class ProcessServlet extends HttpServlet {
 		String[] words = dataNoPunct.split(" +");
 		logger.info("Word Stats: total " + words.length);
 
-		// store word in Redis
+		PrintWriter writer = response.getWriter();
+
 		RedisConnect redis = (RedisConnect) ctx.getAttribute("Redis");
+		RedisConnection<String, String> conn = null;
+		try {
+			conn = redis.conn();
+		} catch (Exception e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			logger.error(e.getClass().getName() + ": " + e.getMessage());
+			writer.println("<html>\n<h2>Processed 0 words</h2>\n</html>\n");
+			return;
+		}
+
+		// store words in Redis
 		for (int i = 0; i < words.length; i++) {
 			// increments the number stored at key by one
 			// if the key does not exist, it is set to 0 before performing the operation
-			redis.conn().incr(words[i].toLowerCase());
+			conn.incr(words[i].toLowerCase());
 		}
 
-		String the = redis.conn().get("the");
+		String the = conn.get("the");
+		conn.close();
+
 		logger.info("firstWord: " + words[0]);
 		logger.info("theWords: " + the);
 		logger.info("totalWords: " + words.length);
 
 		// return HTML response
-		PrintWriter writer = response.getWriter();
-		String htmlRespone = "<html>\n";
-		htmlRespone += "<h2>Processed " + words.length + " words</h2>\n";
-		htmlRespone += "</html>\n";
+		String htmlRespone = "<html>\n<h2>Processed " + words.length + " words</h2>\n</html>\n";
 		writer.println(htmlRespone);
 	}
 }
