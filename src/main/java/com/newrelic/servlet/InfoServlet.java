@@ -62,7 +62,6 @@ public class InfoServlet extends HttpServlet {
 			if (keyVal.length == 1 || keyVal[0].length() == 0 || keyVal[0].charAt(0) == '#') {
 				continue;
 			}
-			logger.debug(keyVal[0] + " = " + keyVal[1]);
 			stats.put(keyVal[0], keyVal[1]);
 		}
 		logger.info("Found " + stats.size() + " keys");
