@@ -18,6 +18,8 @@ sleep 30
 docker run -d --rm --name tomcat --env-file $ROOT/lab2/newrelic.env -p $HOST:8080:8080 --link redis \
   --link mssql -v $ROOT/lab2/target/lab2.war:/usr/local/tomcat/webapps/lab2.war --log-driver=fluentd --log-opt tag="nrlogs" tomcat-lab2
 
+sleep 15
+
 # Node.js app, use newrelic.env for license key
 docker run -d --rm --name fs-node --env-file $ROOT/lab2/newrelic.env -p $HOST:8081:8080 \
   --link tomcat --log-driver=fluentd --log-opt tag="nrlogs" fs-node:v0.5
