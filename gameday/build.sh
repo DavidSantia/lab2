@@ -8,7 +8,9 @@ docker run --rm --name mvn-build -v $ROOT/lab2:/lab2 --entrypoint sh davidsantia
 
 # Build tomcat image with Java apm
 cd ~/nrworkshop/lab2
-docker rmi tomcat-lab2
+if [ ! -z `docker images -q tomcat-lab2` ]; then
+  docker rmi tomcat-lab2
+fi
 docker build -t tomcat-lab2 .
 
 # Build Node.js app
@@ -18,15 +20,14 @@ docker build -f Dockerfile_v1.0 -t fs-node:v1.0 .
 
 # Build fluentd image with NR Logs plugin
 cd ../fluentd
-docker rmi fluentd-lab2
+if [ ! -z `docker images -q fluentd-lab2` ]; then
+  docker rmi fluentd-lab2
+fi
 docker build -t fluentd-lab2 .
 
 # Build MSSQL with T-SQL script to make schema
 cd ../mssql
-docker rmi mssql
+if [ ! -z `docker images -q mssql` ]; then
+  docker rmi mssql
+fi
 docker build -t mssql .
-
-# Build MSSQL OHI
-docker pull golang
-docker run --rm -v $ROOT/lab2/nri-mssql:/go/src/github.com/newrelic/nri-mssql --entrypoint sh golang \
-  -c "cd /go/src/github.com/newrelic/nri-mssql; make"
