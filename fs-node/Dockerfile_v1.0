@@ -1,5 +1,6 @@
 FROM davidsantia/fs-node
 
+ADD gameday/index.js_v1.0 /src/index.js
 ADD gameday/list.js_v1.0 /src/assets/list.js
 ADD gameday/login.js_v1.0 /src/assets/login.js
 ADD gameday/multi.js_v1.0 /src/assets/multi.js
