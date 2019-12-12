@@ -223,7 +223,7 @@ app.post("/*@process", (req, res) => {
             }
             let words = "0";
             const found = body.match(/<h2>Processed ([0-9]+) words<\/h2>/);
-            if (found.length > 1)
+            if (found && found.length > 1)
                 words = found[1];
             logger.info("Server processed " + words + " words");
             res.json({status: "Success", words: words});
