@@ -1,7 +1,8 @@
 package com.newrelic.servlet;
 
-import com.lambdaworks.redis.RedisConnection;
 import com.newrelic.servlet.RedisConnect;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Tuple;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -35,9 +36,9 @@ public class InfoServlet extends HttpServlet {
 		PrintWriter writer = response.getWriter();
 
 		RedisConnect redis = (RedisConnect) ctx.getAttribute("Redis");
-		RedisConnection<String, String> conn = null;
+		Jedis jedis;
 		try {
-			conn = redis.conn();
+			jedis = redis.getResource();
 		} catch (Exception e) {
 			response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
 			logger.error(e.getClass().getName() + ": " + e.getMessage());
@@ -46,7 +47,7 @@ public class InfoServlet extends HttpServlet {
 		}
 
 		// get Redis stats
-		String info = conn.info();
+		String info = jedis.info();
 
 		// return HTML response
 		String htmlRespone = "<html>\n";
@@ -65,5 +66,6 @@ public class InfoServlet extends HttpServlet {
 			stats.put(keyVal[0], keyVal[1]);
 		}
 		logger.info("Found " + stats.size() + " keys");
+		jedis.close();
 	}
 }

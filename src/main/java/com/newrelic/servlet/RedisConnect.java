@@ -1,17 +1,19 @@
 package com.newrelic.servlet;
 
-import com.lambdaworks.redis.*;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 /**
  * @author davidmorris
  */
 public class RedisConnect {
-	private RedisClient client;
+	private JedisPool pool;
 
 	public RedisConnect(String host) {
 		// create connection
 		try {
-			this.client = new RedisClient(RedisURI.create("redis://" + host + ":6379"));
+			this.pool = new JedisPool(new JedisPoolConfig(), host);
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
@@ -19,14 +21,14 @@ public class RedisConnect {
 		System.out.println("Connected to Redis");
 	}
 
-	public RedisConnection<String, String> conn() {
-		return this.client.connect();
+	public Jedis getResource() {
+		return this.pool.getResource();
 	}
 
 	public void close() {
 		try {
-			this.client.shutdown();
-		} catch (RedisException e) {
+			this.pool.close();
+		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
 		}

@@ -20,9 +20,9 @@
       <version>3.1.0</version>
     </dependency>
     <dependency>
-      <groupId>biz.paluch.redis</groupId>
-      <artifactId>lettuce</artifactId>
-      <version>3.2.Final</version>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>3.2.0</version>
     </dependency>
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>

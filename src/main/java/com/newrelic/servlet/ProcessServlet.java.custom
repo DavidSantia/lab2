@@ -1,8 +1,8 @@
 package com.newrelic.servlet;
 
-import com.lambdaworks.redis.RedisConnection;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.servlet.RedisConnect;
+import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -24,10 +24,11 @@ import org.apache.logging.log4j.Logger;
 public class ProcessServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private static final Logger logger = LogManager.getLogger(ProcessServlet.class);
+	private static final Logger logger = LogManager
+			.getLogger(ProcessServlet.class);
 
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
 		ServletContext ctx = request.getServletContext();
 
 		// get form textarea
@@ -35,18 +36,17 @@ public class ProcessServlet extends HttpServlet {
 		String data = request.getParameter("data");
 
 		// strip the punctuation
-		String dataNoPunct = data.replaceAll("[’']", "").replaceAll("[^A-Za-z0-9]", " ");
+		String dataNoPunct = data.replaceAll("[’']", "").replaceAll(
+				"[^A-Za-z0-9]", " ");
 
 		// split into words
 		String[] words = dataNoPunct.split(" +");
-		logger.info("Word Stats: total " + words.length);
 
 		PrintWriter writer = response.getWriter();
-
 		RedisConnect redis = (RedisConnect) ctx.getAttribute("Redis");
-		RedisConnection<String, String> conn = null;
+		Jedis jedis;
 		try {
-			conn = redis.conn();
+			jedis = redis.getResource();
 		} catch (Exception e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			logger.error(e.getClass().getName() + ": " + e.getMessage());
@@ -56,25 +56,28 @@ public class ProcessServlet extends HttpServlet {
 
 		// store words in Redis
 		for (int i = 0; i < words.length; i++) {
-			// increments the number stored at key by one
-			// if the key does not exist, it is set to 0 before performing the operation
-			conn.incr(words[i].toLowerCase());
+			// increments score by 1 for member in the sorted set stored at key
+			// if key does not exist, score is set to 0 before performing
+			// incrementing
+			jedis.zincrby("words", 1, words[i].toLowerCase());
 		}
 
-		String the = conn.get("the");
-		conn.close();
+		Integer theInt = jedis.zscore("words", "the").intValue();
+		String the = theInt.toString();
+		jedis.close();
 
 		logger.info("firstWord: " + words[0]);
 		logger.info("theWords: " + the);
-		logger.info("totalWords: " + words.length);
+		logger.info("processedWords: " + words.length);
 
 		// Add custom attributes to transaction event
 		NewRelic.addCustomParameter("firstWord", words[0]);
 		NewRelic.addCustomParameter("theWords", the);
-		NewRelic.addCustomParameter("totalWords", words.length);
+		NewRelic.addCustomParameter("processedWords", words.length);
 
 		// return HTML response
-		String htmlRespone = "<html>\n<h2>Processed " + words.length + " words</h2>\n</html>\n";
+		String htmlRespone = "<html>\n<h2>Processed " + words.length
+				+ " words</h2>\n</html>\n";
 		writer.println(htmlRespone);
 	}
 }
