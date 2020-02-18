@@ -1,7 +1,9 @@
 package com.newrelic.servlet;
 
-import com.lambdaworks.redis.RedisConnection;
 import com.newrelic.servlet.RedisConnect;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Tuple;
+
 import com.newrelic.telemetry.Attributes;
 import com.newrelic.telemetry.SimpleMetricBatchSender;
 import com.newrelic.telemetry.metrics.Gauge;
@@ -20,7 +22,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,18 +36,19 @@ import org.apache.logging.log4j.Logger;
 public class InfoServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private static final Logger logger = LogManager.getLogger(InfoServlet.class);
+	private static final Logger logger = LogManager
+			.getLogger(InfoServlet.class);
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
 		ServletContext ctx = request.getServletContext();
 
 		PrintWriter writer = response.getWriter();
 
 		RedisConnect redis = (RedisConnect) ctx.getAttribute("Redis");
-		RedisConnection<String, String> conn = null;
+		Jedis jedis;
 		try {
-			conn = redis.conn();
+			jedis = redis.getResource();
 		} catch (Exception e) {
 			response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
 			logger.error(e.getClass().getName() + ": " + e.getMessage());
@@ -52,7 +57,7 @@ public class InfoServlet extends HttpServlet {
 		}
 
 		// get Redis stats
-		String info = conn.info();
+		String info = jedis.info();
 
 		// return HTML response
 		String htmlRespone = "<html>\n";
@@ -65,16 +70,19 @@ public class InfoServlet extends HttpServlet {
 		Map<String, String> stats = new HashMap<String, String>();
 		for (int i = 0; i < KeyValues.length; i++) {
 			String[] keyVal = KeyValues[i].split(":");
-			if (keyVal.length == 1 || keyVal[0].length() == 0 || keyVal[0].charAt(0) == '#') {
+			if (keyVal.length == 1 || keyVal[0].length() == 0
+					|| keyVal[0].charAt(0) == '#') {
 				continue;
 			}
 			stats.put(keyVal[0], keyVal[1]);
 		}
 		logger.info("Found " + stats.size() + " keys");
 
-		String insightsInsertKey = System.getenv("NEW_RELIC_INSIGHTS_INSERT_KEY");
+		String insightsInsertKey = System
+				.getenv("NEW_RELIC_INSIGHTS_INSERT_KEY");
 		if (insightsInsertKey.length() > 0) {
-			MetricBatchSender sender = SimpleMetricBatchSender.builder(insightsInsertKey).build();
+			MetricBatchSender sender = SimpleMetricBatchSender.builder(
+					insightsInsertKey).build();
 
 			// common attributes
 			Attributes commonAttributes = new Attributes();
@@ -84,22 +92,41 @@ public class InfoServlet extends HttpServlet {
 
 			// memoryUsed attributes
 			Attributes memAttributes = new Attributes();
-			memAttributes.put("fragmentationRatio", Double.parseDouble(stats.get("mem_fragmentation_ratio")));
-			memAttributes.put("fragmentationBytes", Integer.parseInt(stats.get("mem_fragmentation_bytes")));
+			memAttributes.put("fragmentationRatio",
+					Double.parseDouble(stats.get("mem_fragmentation_ratio")));
+			memAttributes.put("fragmentationBytes",
+					Integer.parseInt(stats.get("mem_fragmentation_bytes")));
 
 			// memoryUsed metric
-			Gauge memoryUsed = new Gauge("memoryUsed", Integer.parseInt(stats.get("used_memory_rss")),
-					System.currentTimeMillis(), memAttributes);
+			Gauge memoryUsed = new Gauge("memoryUsed", Integer.parseInt(stats
+					.get("used_memory_rss")), System.currentTimeMillis(),
+					memAttributes);
 			metricBuffer.addMetric(memoryUsed);
 
 			// connections attributes
 			Attributes connAttributes = new Attributes();
-			connAttributes.put("commandsProcessed", Integer.parseInt(stats.get("total_commands_processed")));
+			connAttributes.put("commandsProcessed",
+					Integer.parseInt(stats.get("total_commands_processed")));
 
 			// connections metric
-			Gauge connections = new Gauge("connections", Integer.parseInt(stats.get("total_connections_received")),
+			Gauge connections = new Gauge("connections", Integer.parseInt(stats
+					.get("total_connections_received")),
 					System.currentTimeMillis(), connAttributes);
 			metricBuffer.addMetric(connections);
+
+			// get top 10 words from Redis
+			Set<Tuple> top10 = jedis.zrevrangeWithScores("words", 0, 9);
+			Iterator iterator = top10.iterator();
+
+			// topWords metrics
+			while (iterator.hasNext()) {
+				Tuple element = (Tuple) iterator.next();
+				Attributes wordAttributes = new Attributes();
+				wordAttributes.put("word", element.getElement());
+				metricBuffer.addMetric(new Gauge("topWords",
+						element.getScore(), System.currentTimeMillis(),
+						wordAttributes));
+			}
 
 			// send metrics
 			logger.info("Sending dimensional metrics");
@@ -111,5 +138,6 @@ public class InfoServlet extends HttpServlet {
 		} else {
 			logger.warn("env var NEW_RELIC_INSIGHTS_INSERT_KEY not configured");
 		}
+		jedis.close();
 	}
 }
