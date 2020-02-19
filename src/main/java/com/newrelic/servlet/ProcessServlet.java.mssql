@@ -84,7 +84,11 @@ public class ProcessServlet extends HttpServlet {
 			logger.error(e.getClass().getName() + ": " + e.getMessage());
 		}
 
-		Integer theInt = jedis.zscore("words", "the").intValue();
+		Double theDouble = jedis.zscore("words", "the");
+		Integer theInt = 0;
+		if (theDouble != null) {
+			theInt = theDouble.intValue();
+		}
 		String the = theInt.toString();
 		jedis.close();
 
